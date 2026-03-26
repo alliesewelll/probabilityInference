@@ -35,7 +35,16 @@ def calc_global_joint_prob(model, variableValues):
   # Hint: Don't forget that you need to handle the fact that variables can have both True and False values!
   #
   # (Reference solution is 7 lines of code.)
-  raise NotImplementedError() #DELETE AND ADD YOUR CODE
+  result = 1.0
+  for var in model.vars:
+    currValue = variableValues[var]
+    prTrue = read_cpt(model, var, variableValues)
+    if currValue:
+      result *= prTrue
+    else:
+      result *= (1-prTrue)
+  return result
+  
 
 def calc_query_exact_brute(model, queryVar, queryVal, evidence):
   """
