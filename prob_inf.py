@@ -100,7 +100,10 @@ def calc_query_exact_brute(model, queryVar, queryVal, evidence):
     # Hint: You would find a dictionary "is subset" operation very useful in solving this problem
     #
     # (Reference solution is 4 lines of code.)
-    raise NotImplementedError() #DELETE AND ADD YOUR CODE
+    if dict_issubset(jptEntry, evidence):
+      pr_E += pr_entry
+      if jptEntry[queryVar] == queryVal:
+        pr_QE += pr_entry
 
   #Definition of coditional probability
   return pr_QE/pr_E
