@@ -161,7 +161,10 @@ def calc_query_exact_tree(model, queryVar, queryVal, evidence):
   # Refer to the example on slide 30.
   #
   # (Reference solution is 3 lines of code.)
-  raise NotImplementedError() #DELETE AND ADD YOUR CODE
+  total = prQ_T + prQ_F
+  prQ_T /= total
+  prQ_F /= total
+  return (prQ_T if queryVal else prQ_F)
 
 def recurse_calc_query_exact_tree(model, queryVar, evidence, variableValues, remainingCalc):
   """
@@ -209,7 +212,18 @@ def recurse_calc_query_exact_tree(model, queryVar, evidence, variableValues, rem
     #   example of how to make the recursive call(s)
     #
     # (Reference solution is 7 lines of code.)
-    raise NotImplementedError() #DELETE AND ADD YOUR CODE
+    originalValue = variableValues[var]
+    variableValues[var]=True
+    prQ_T_branch, prQ_F_branch = recurse_calc_query_exact_tree(model, queryVar, evidence, variableValues, remainingCalc[1:])
+    prQ_T = prQ_T_branch
+    prQ_F = prQ_F_branch
+    variableValues[var]=False
+    prQ_T_branch, prQ_F_branch = recurse_calc_query_exact_tree(model, queryVar, evidence, variableValues, remainingCalc[1:])
+    prQ_T += prQ_T_branch
+    prQ_F += prQ_F_branch
+    variableValues[var]=originalValue
+
+
   else:
     #Probability term, calculate conditional probability for this variable and continue calculation
     prQ_T, prQ_F = 1,1 #Base case if we don't recurse below
@@ -234,7 +248,17 @@ def recurse_calc_query_exact_tree(model, queryVar, evidence, variableValues, rem
       #   BUT remember to change it back to the original values when you are done!
       #
       # (Reference solution is 11 lines of code.)
-      raise NotImplementedError() #DELETE AND ADD YOUR CODE
+      originalValue = variableValues[queryVar]
+      
+      variableValues[queryVar]=True
+      p_T = read_cpt(model, var, variableValues)
+      prQ_T = p_T if variableValues[var] else (1-p_T)
+      
+      variableValues[queryVar]=False
+      p_T = read_cpt(model, var, variableValues)
+      prQ_F = p_T if variableValues[var] else (1-p_T)
+      
+      variableValues[queryVar]= originalValue
     elif var==queryVar:
       #This term is probability _for_ the Query variable
       if DEBUG_OUTPUT>0: print(indent+'P({0}|{1}) [Q]'.format(var,','.join(model.varDist[var].parents)))
@@ -252,7 +276,9 @@ def recurse_calc_query_exact_tree(model, queryVar, evidence, variableValues, rem
       # Slides 29 show examples of dealing with terms referencing the query variable.
       #
       # (Reference solution is 3 lines of code.)
-      raise NotImplementedError() #DELETE AND ADD YOUR CODE
+      prQ_T = read_cpt(model, var, variableValues)
+      prQ_F = 1 - prQ_T
+      
     else:
       #Simple term, no need to worry about query variable
       if DEBUG_OUTPUT>0: print(indent+'P({0}|{1}) [S]'.format(var,','.join(model.varDist[var].parents)))
@@ -269,7 +295,11 @@ def recurse_calc_query_exact_tree(model, queryVar, evidence, variableValues, rem
       # Slide 28 shows examples of dealing with terms that *do not* reference the query variable.
       #
       # (Reference solution is 5 lines of code.)
-      raise NotImplementedError() #DELETE AND ADD YOUR CODE
+      prQ_T = read_cpt(model, var, variableValues)
+      prQ_F = 1 - prQ_T
+      factor = prQ_T if variableValues[var] else prQ_F
+      prQ_T = factor
+      prQ_F = factor
 
     if len(remainingCalc)>1:
       #If there are still terms left, then recurse
@@ -282,7 +312,8 @@ def recurse_calc_query_exact_tree(model, queryVar, evidence, variableValues, rem
       # How do you combine _factors_ together?
       #
       # (Reference solution is 2 lines of code.)
-      raise NotImplementedError() #DELETE AND ADD YOUR CODE
+      prQ_T *= recurse_prQ_T
+      prQ_F *= recurse_prQ_F
 
   return prQ_T, prQ_F #Return (relative) probability that query is True vs False
   
